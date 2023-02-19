@@ -78,10 +78,7 @@ class BasicCharacterControllerInput {
 
 export default class Character_control {
   input: BasicCharacterControllerInput;
-  character: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial> & {
-    touching?: boolean;
-    direction?: Vector3 | null;
-  };
+  character: THREE.Object3D;
   control: OrbitControls;
   currentPosition: Vector3;
   camera: THREE.PerspectiveCamera;
@@ -91,7 +88,7 @@ export default class Character_control {
   scene: THREE.Scene;
 
   constructor(
-    character: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>,
+    character: THREE.Object3D,
     control: OrbitControls,
     camera: THREE.PerspectiveCamera,
     scene: THREE.Scene
@@ -112,11 +109,11 @@ export default class Character_control {
     const frontVector = new Vector3(
       0,
       0,
-      (this.input.keys.backward ? 1 : 0) - (this.input.keys.forward ? 1 : 0)
+      (this.input.keys.forward ? 1 : 0) - (this.input.keys.backward ? 1 : 0)
     );
 
     const sideVector = new Vector3(
-      (this.input.keys.left ? 1 : 0) - (this.input.keys.right ? 1 : 0),
+      (this.input.keys.right ? 1 : 0) - (this.input.keys.left ? 1 : 0),
       0,
       0
     );
@@ -129,42 +126,42 @@ export default class Character_control {
 
     let moveVector = new Vector3(direction.x, 0, direction.z);
 
-    if (this.character.touching && this.character.direction) {
-      const wallVector = this.character.direction.normalize();
+    // if (this.character.touching && this.character.direction) {
+    //   const wallVector = this.character.direction.normalize();
 
-      const moveVectorCopy = new Vector3()
-        .copy(
-          new Vector3(
-            this.airDirection?.x && !moveVector.x
-              ? this.airDirection.x
-              : moveVector.x,
-            0,
-            this.airDirection?.z && !moveVector.z
-              ? this.airDirection.z
-              : moveVector.z
-          )
-        )
-        .normalize();
+    //   const moveVectorCopy = new Vector3()
+    //     .copy(
+    //       new Vector3(
+    //         this.airDirection?.x && !moveVector.x
+    //           ? this.airDirection.x
+    //           : moveVector.x,
+    //         0,
+    //         this.airDirection?.z && !moveVector.z
+    //           ? this.airDirection.z
+    //           : moveVector.z
+    //       )
+    //     )
+    //     .normalize();
 
-      if (wallVector.angleTo(moveVectorCopy) > 1) {
-        const dotWallPlayer = new Vector3()
-          .copy(moveVectorCopy)
-          .dot(wallVector);
+    //   if (wallVector.angleTo(moveVectorCopy) > 1) {
+    //     const dotWallPlayer = new Vector3()
+    //       .copy(moveVectorCopy)
+    //       .dot(wallVector);
 
-        const wallVectorScalar = new Vector3(
-          wallVector.x * dotWallPlayer,
-          wallVector.y * dotWallPlayer,
-          wallVector.z * dotWallPlayer
-        );
+    //     const wallVectorScalar = new Vector3(
+    //       wallVector.x * dotWallPlayer,
+    //       wallVector.y * dotWallPlayer,
+    //       wallVector.z * dotWallPlayer
+    //     );
 
-        const newMoveVector = new Vector3().subVectors(
-          moveVectorCopy,
-          wallVectorScalar
-        );
+    //     const newMoveVector = new Vector3().subVectors(
+    //       moveVectorCopy,
+    //       wallVectorScalar
+    //     );
 
-        moveVector = new Vector3(newMoveVector.x, 0, newMoveVector.z);
-      }
-    }
+    //     moveVector = new Vector3(newMoveVector.x, 0, newMoveVector.z);
+    //   }
+    // }
 
     moveVector.normalize().multiplyScalar(SPEED);
 
@@ -173,7 +170,7 @@ export default class Character_control {
 
       if (
         !this.airDirection ||
-        this.character.touching ||
+        // this.character.touching ||
         this.input.keys.backward ||
         this.input.keys.forward ||
         this.input.keys.left ||

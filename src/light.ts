@@ -28,7 +28,7 @@ export default class Light {
 
     this.scene.add(directionalLight);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff,1 );
     this.scene.add(ambientLight);
   }
 }
