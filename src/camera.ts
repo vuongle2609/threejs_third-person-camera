@@ -16,16 +16,16 @@ export default class Camera_movement {
     this.camera = camera;
 
     this.camera.rotation.set(CAMERA_ROTATION, 0, 0);
-    this.updateNewPosition(true)
+    this.updateNewPosition(true);
   }
 
   updateNewPosition(test: boolean) {
     if (!test) {
       this.camera.position.lerp(
         new Vector3(
-          this.character.position.x,
-          this.character.position.y + CAMERA_HEIGHT_FROM_CHARACTER,
-          this.character.position.z + CAMERA_FAR_FROM_CHARACTER
+          this.character?.position.x || 0,
+          this.character?.position.y || 0 + CAMERA_HEIGHT_FROM_CHARACTER,
+          this.character?.position.z || 0 + CAMERA_FAR_FROM_CHARACTER
         ),
         CAMERA_LERP_ALPHA
       );
@@ -34,9 +34,9 @@ export default class Camera_movement {
 
     this.camera.position.add(
       new Vector3(
-        this.character.position.x,
-        this.character.position.y + CAMERA_HEIGHT_FROM_CHARACTER,
-        this.character.position.z + CAMERA_FAR_FROM_CHARACTER
+        this.character?.position.x || 0,
+        this.character?.position.y || 0 + CAMERA_HEIGHT_FROM_CHARACTER,
+        this.character?.position.z || 0 + CAMERA_FAR_FROM_CHARACTER
       )
     );
   }

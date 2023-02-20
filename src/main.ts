@@ -7,6 +7,7 @@ import Camera_movement from "./camera.js";
 import { ASPECT, FAR, FOV, NEAR, SPEED } from "./configs/constants";
 import Character_control from "./control";
 import Light from "./light";
+import { GUI } from "dat.gui";
 import { AnimationAction } from "three";
 class Game {
   renderer: THREE.WebGLRenderer;
@@ -21,8 +22,23 @@ class Game {
   character: THREE.Object3D;
   characterBB: THREE.Box3;
   wallsBB: THREE.Box3[] = [];
-  characterAnimation: AnimationAction[] = [];
   characterMixer: THREE.AnimationMixer;
+
+  characterAnimation: {
+    runningBack: THREE.AnimationAction | undefined;
+    walking: THREE.AnimationAction | undefined;
+    idle: THREE.AnimationAction | undefined;
+    jump: THREE.AnimationAction | undefined;
+    leftRun: THREE.AnimationAction | undefined;
+    rightRun: THREE.AnimationAction | undefined;
+  } = {
+    runningBack: undefined,
+    walking: undefined,
+    idle: undefined,
+    jump: undefined,
+    leftRun: undefined,
+    rightRun: undefined,
+  };
 
   constructor() {
     this.initialize();
@@ -117,50 +133,88 @@ class Game {
       this.wallsBB.push(wallBB);
     });
 
+    this.camera_movement = new Camera_movement(this.character, this.camera);
+
+    this.stats = Stats();
+    // fps show
+    document.body.appendChild(this.stats.dom);
+
+    this.loadModels();
+
+    this.clock = new THREE.Clock();
+    this.gameloop(0);
+  }
+
+  async loadModels() {
     const fbxLoader = new FBXLoader();
 
-    fbxLoader.load("/assets/char.fbx", (character) => {
-      this.character = character;
+    const character = await fbxLoader.loadAsync("/assets/char.fbx");
 
-      character.scale.set(0.04, 0.04, 0.04);
-      character.receiveShadow = true;
-      character.castShadow = true;
+    this.character = character;
 
-      character.traverse((item) => {
-        item.receiveShadow = true;
-        item.castShadow = true;
-      });
+    character.scale.set(0.04, 0.04, 0.04);
+    character.receiveShadow = true;
+    character.castShadow = true;
 
-      this.characterMixer = new THREE.AnimationMixer(this.character);
+    character.traverse((item) => {
+      item.receiveShadow = true;
+      item.castShadow = true;
+    });
 
-      console.log(character);
+    this.characterMixer = new THREE.AnimationMixer(this.character);
 
-      fbxLoader.load("/assets/walk.fbx", (walk) => {
-        const walkAnimation = this.characterMixer.clipAction(
-          walk.animations[0]
-        );
-        this.characterAnimation[0] = walkAnimation;
-        walkAnimation.play();
-      });
+    const onLoad = (name: string, animation: THREE.Group) => {
+      console.log("loaded ", name);
 
-      this.scene.add(this.character);
+      // use for remove change character position behavior
+      const animationClip = animation.animations[0];
 
-      this.character_control = new Character_control(
-        this.character,
-        this.control,
-        this.camera,
-        this.scene
+      const rootBone = character.children[0];
+      const tracks = animationClip.tracks;
+      const rootTranslationTrackIndex = tracks.findIndex(
+        (track) =>
+          track.name.endsWith(".position") &&
+          track.name.startsWith(rootBone.name)
+      );
+      if (rootTranslationTrackIndex !== -1) {
+        tracks.splice(rootTranslationTrackIndex, 1);
+      }
+
+      const newAnimation = this.characterMixer.clipAction(
+        animation.animations[0]
       );
 
-      this.camera_movement = new Camera_movement(this.character, this.camera);
+      this.characterAnimation[name] = newAnimation;
+    };
 
-      this.stats = Stats();
-      // fps show
-      document.body.appendChild(this.stats.dom);
+    const urlsAnimationModels = [
+      { url: "/assets/running.fbx", name: "running" },
+      { url: "/assets/Running Backward.fbx", name: "runningBack" },
+      { url: "/assets/walking.fbx", name: "walking" },
+      { url: "/assets/idle.fbx", name: "idle" },
+      { url: "/assets/jump.fbx", name: "jump" },
+      { url: "/assets/left strafe.fbx", name: "leftRun" },
+      { url: "/assets/right strafe.fbx", name: "rightRun" },
+    ];
 
-      this.clock = new THREE.Clock();
-      this.gameloop(0);
+    const animationsModels = await Promise.all(
+      urlsAnimationModels.map((item) => fbxLoader.loadAsync(item.url))
+    );
+
+    animationsModels.forEach((item, index) => {
+      onLoad(urlsAnimationModels[index].name, item);
     });
+
+    this.scene.add(this.character);
+
+    this.characterAnimation.leftRun?.play()
+
+    this.character_control = new Character_control(
+      this.character,
+      this.control,
+      this.camera,
+      this.scene
+    );
   }
 
   onWindowResize() {
@@ -180,7 +234,7 @@ class Game {
       this.characterMixer.update(deltaT);
     }
     this.renderer.render(this.scene, this.camera);
-    this.character_control.update(deltaT);
+    this.character_control?.update(deltaT);
     this.stats.update();
     this.camera_movement.update();
   }
