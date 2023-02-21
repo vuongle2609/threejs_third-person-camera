@@ -1,14 +1,15 @@
+import { CharacterAnimationType } from "./type";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import Stats from "three/examples/jsm/libs/stats.module";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import "toastr/build/toastr.min.css";
 import Camera_movement from "./camera.js";
-import { ASPECT, FAR, FOV, NEAR, SPEED } from "./configs/constants";
+import { ASPECT, FAR, FOV, NEAR } from "./configs/constants";
 import Character_control from "./control";
 import Light from "./light";
-import { GUI } from "dat.gui";
-import { AnimationAction } from "three";
+import BasicCharacterControllerInput from "./input";
+import Character_animation from "./animation";
 class Game {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
@@ -24,21 +25,7 @@ class Game {
   wallsBB: THREE.Box3[] = [];
   characterMixer: THREE.AnimationMixer;
 
-  characterAnimation: {
-    runningBack: THREE.AnimationAction | undefined;
-    walking: THREE.AnimationAction | undefined;
-    idle: THREE.AnimationAction | undefined;
-    jump: THREE.AnimationAction | undefined;
-    leftRun: THREE.AnimationAction | undefined;
-    rightRun: THREE.AnimationAction | undefined;
-  } = {
-    runningBack: undefined,
-    walking: undefined,
-    idle: undefined,
-    jump: undefined,
-    leftRun: undefined,
-    rightRun: undefined,
-  };
+  character_animation: Character_animation;
 
   constructor() {
     this.initialize();
@@ -146,9 +133,19 @@ class Game {
   }
 
   async loadModels() {
-    const fbxLoader = new FBXLoader();
+    const manager = new THREE.LoadingManager();
+
+    manager.onProgress = function (item, loaded, total) {
+      console.log("Loaded:", Math.round((loaded / total) * 100) + "%");
+    };
+
+    const fbxLoader = new FBXLoader(manager);
 
     const character = await fbxLoader.loadAsync("/assets/char.fbx");
+    console.log(
+      "Loaded succesfully %ccharacter",
+      "color: red; font-weight: bold"
+    );
 
     this.character = character;
 
@@ -163,8 +160,21 @@ class Game {
 
     this.characterMixer = new THREE.AnimationMixer(this.character);
 
+    const characterAnimations: CharacterAnimationType = {
+      running: undefined,
+      runningBack: undefined,
+      walking: undefined,
+      idle: undefined,
+      jump: undefined,
+      leftRun: undefined,
+      rightRun: undefined,
+    };
+
     const onLoad = (name: string, animation: THREE.Group) => {
-      console.log("loaded ", name);
+      console.log(
+        `Loaded succesfully %c${name}`,
+        "color: red; font-weight: bold"
+      );
 
       // use for remove change character position behavior
       const animationClip = animation.animations[0];
@@ -184,7 +194,8 @@ class Game {
         animation.animations[0]
       );
 
-      this.characterAnimation[name] = newAnimation;
+      characterAnimations[name as keyof typeof characterAnimations] =
+        newAnimation;
     };
 
     const urlsAnimationModels = [
@@ -207,14 +218,20 @@ class Game {
 
     this.scene.add(this.character);
 
-    this.characterAnimation.leftRun?.play()
+    const input = new BasicCharacterControllerInput();
 
-    this.character_control = new Character_control(
-      this.character,
-      this.control,
-      this.camera,
-      this.scene
-    );
+    this.character_control = new Character_control({
+      character: this.character,
+      control: this.control,
+      camera: this.camera,
+      scene: this.scene,
+      input,
+    });
+
+    this.character_animation = new Character_animation({
+      animations: characterAnimations,
+      input,
+    });
   }
 
   onWindowResize() {
@@ -230,11 +247,10 @@ class Game {
 
     const deltaT = this.clock.getDelta();
 
-    if (this.characterMixer) {
-      this.characterMixer.update(deltaT);
-    }
+    this.characterMixer?.update(deltaT);
     this.renderer.render(this.scene, this.camera);
     this.character_control?.update(deltaT);
+    this.character_animation?.update(deltaT);
     this.stats.update();
     this.camera_movement.update();
   }

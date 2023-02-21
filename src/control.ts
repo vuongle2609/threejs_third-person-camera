@@ -2,78 +2,14 @@ import * as THREE from "three";
 import { Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GRAVITY, JUMP_FORCE, SPEED } from "./configs/constants";
-class BasicCharacterControllerInput {
-  keys: {
-    forward: boolean;
-    backward: boolean;
-    left: boolean;
-    right: boolean;
-    space: boolean;
-    shift: boolean;
-  };
-  constructor() {
-    this.initialize();
-  }
+import BasicCharacterControllerInput from "./input";
 
-  initialize() {
-    this.keys = {
-      forward: false,
-      backward: false,
-      left: false,
-      right: false,
-      space: false,
-      shift: false,
-    };
-
-    document.addEventListener("keydown", (e) => this.onKeydown(e), false);
-    document.addEventListener("keyup", (e) => this.onKeyup(e), false);
-  }
-
-  onKeydown(e: KeyboardEvent) {
-    switch (e.keyCode) {
-      case 87: // w
-        this.keys.forward = true;
-        break;
-      case 65: // a
-        this.keys.left = true;
-        break;
-      case 83: // s
-        this.keys.backward = true;
-        break;
-      case 68: // d
-        this.keys.right = true;
-        break;
-      case 32: // space
-        this.keys.space = true;
-        break;
-      case 16: // shift
-        this.keys.shift = true;
-        break;
-    }
-  }
-
-  onKeyup(e: KeyboardEvent) {
-    switch (e.keyCode) {
-      case 87: // w
-        this.keys.forward = false;
-        break;
-      case 65: // a
-        this.keys.left = false;
-        break;
-      case 83: // s
-        this.keys.backward = false;
-        break;
-      case 68: // d
-        this.keys.right = false;
-        break;
-      case 32: // space
-        this.keys.space = false;
-        break;
-      case 16: // shift
-        this.keys.shift = false;
-        break;
-    }
-  }
+interface PropsType {
+  character: THREE.Object3D;
+  control: OrbitControls;
+  camera: THREE.PerspectiveCamera;
+  scene: THREE.Scene;
+  input: BasicCharacterControllerInput;
 }
 
 export default class Character_control {
@@ -87,15 +23,10 @@ export default class Character_control {
   airDirection: Vector3 | null;
   scene: THREE.Scene;
 
-  constructor(
-    character: THREE.Object3D,
-    control: OrbitControls,
-    camera: THREE.PerspectiveCamera,
-    scene: THREE.Scene
-  ) {
+  constructor({ character, control, camera, scene, input }: PropsType) {
     this.scene = scene;
     this.camera = camera;
-    this.input = new BasicCharacterControllerInput();
+    this.input = input;
     this.control = control;
     this.character = character;
 
