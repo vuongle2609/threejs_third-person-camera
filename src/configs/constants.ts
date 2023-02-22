@@ -10,7 +10,8 @@ export const FOV = 20;
 export const ASPECT = window.innerWidth / window.innerHeight;
 export const NEAR = 1.0;
 export const FAR = 500;
-export const CAMERA_HEIGHT_FROM_CHARACTER = 20;
+export const CAMERA_HEIGHT_FROM_CHARACTER = 30;
 export const CAMERA_FAR_FROM_CHARACTER = CAMERA_HEIGHT_FROM_CHARACTER * 1.36;
-export const CAMERA_ROTATION = -0.6;
+
+export const CAMERA_ROTATION_OFFSET_CHARACTER = 16;
 export const CAMERA_LERP_ALPHA = 0.05;

@@ -31,6 +31,16 @@ export default class Character_control {
     this.character = character;
 
     this.currentPosition = new Vector3();
+
+    document.addEventListener("mousemove", (e) => {
+      const rotatePercent = e.clientX / window.screenX;
+      console.log(rotatePercent * 100);
+      this.character.rotation.set(0, 6.2832 * -rotatePercent, 0);
+    });
+
+    // document.addEventListener("click", (e) => {
+    //   this.character.rotation.set(0, 6.2832, 0);
+    // });
   }
 
   updateNewPosition(deltaT: number) {
@@ -96,27 +106,27 @@ export default class Character_control {
 
     moveVector.normalize().multiplyScalar(SPEED);
 
-    if (this.isJump) {
-      this.velocityY -= GRAVITY * deltaT;
+    // if (this.isJump) {
+    //   this.velocityY -= GRAVITY * deltaT;
 
-      if (
-        !this.airDirection ||
-        // this.character.touching ||
-        this.input.keys.backward ||
-        this.input.keys.forward ||
-        this.input.keys.left ||
-        this.input.keys.right
-      ) {
-        this.airDirection = moveVector;
-      }
+    //   if (
+    //     !this.airDirection ||
+    //     // this.character.touching ||
+    //     this.input.keys.backward ||
+    //     this.input.keys.forward ||
+    //     this.input.keys.left ||
+    //     this.input.keys.right
+    //   ) {
+    //     this.airDirection = moveVector;
+    //   }
 
-      if (this.character.position.y <= 0) {
-        this.airDirection = null;
-        this.velocityY = 0;
-        gravityVector.y = 0;
-        this.isJump = false;
-      }
-    }
+    //   if (this.character.position.y <= 0) {
+    //     this.airDirection = null;
+    //     this.velocityY = 0;
+    //     gravityVector.y = 0;
+    //     this.isJump = false;
+    //   }
+    // }
 
     if (this.input.keys.space && !this.isJump) {
       this.velocityY = JUMP_FORCE;

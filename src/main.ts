@@ -10,6 +10,7 @@ import Character_control from "./control";
 import Light from "./light";
 import BasicCharacterControllerInput from "./input";
 import Character_animation from "./animation";
+import { GUI } from "dat.gui";
 class Game {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
@@ -54,7 +55,7 @@ class Game {
     this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
 
     this.control = new OrbitControls(this.camera, this.renderer.domElement);
-    // this.control.dispose();
+    this.control.dispose();
 
     new Light(this.scene);
 
@@ -119,8 +120,6 @@ class Game {
 
       this.wallsBB.push(wallBB);
     });
-
-    this.camera_movement = new Camera_movement(this.character, this.camera);
 
     this.stats = Stats();
     // fps show
@@ -220,6 +219,8 @@ class Game {
 
     const input = new BasicCharacterControllerInput();
 
+    this.camera_movement = new Camera_movement(this.character, this.camera);
+
     this.character_control = new Character_control({
       character: this.character,
       control: this.control,
@@ -252,7 +253,7 @@ class Game {
     this.character_control?.update(deltaT);
     this.character_animation?.update(deltaT);
     this.stats.update();
-    this.camera_movement.update();
+    this.camera_movement?.update(deltaT);
   }
 }
 

@@ -28,12 +28,7 @@ export default class Character_animation {
     const { running, runningBack, jump, leftRun, rightRun, idle } =
       this.animations;
 
-    if (keys.forward) {
-      this.currentAction = {
-        name: "running",
-        action: running,
-      };
-    } else if (keys.left) {
+    if (keys.left) {
       this.currentAction = {
         name: "leftRun",
         action: leftRun,
@@ -43,30 +38,43 @@ export default class Character_animation {
         name: "rightRun",
         action: rightRun,
       };
+    } else if (keys.forward) {
+      this.currentAction = {
+        name: "running",
+        action: running,
+      };
     } else if (keys.backward) {
       this.currentAction = {
         name: "runningBack",
         action: runningBack,
       };
-    } else if (keys.space) {
-      this.currentAction = {
-        name: "jump",
-        action: jump,
-      };
-    } else {
+    }
+    // else if (keys.space) {
+    //   this.currentAction = {
+    //     name: "jump",
+    //     action: jump,
+    //   };
+    // }
+    else {
       this.currentAction = {
         name: "idle",
         action: idle,
       };
     }
 
-    console.log(this.currentAction.name);
     if (this.prevAction) {
-      if (this.prevAction?.name !== this.currentAction?.name) {
-        // this.prevAction?.action?.stop();
-        this.currentAction?.action?.crossFadeFrom(
-          this.prevAction?.action as AnimationAction,
-          0.5,
+      if (
+        this.prevAction?.name !== this.currentAction?.name &&
+        this.currentAction?.action
+      ) {
+        // this.currentAction.action.time = 0.0;
+        this.currentAction.action.enabled = true;
+        this.currentAction.action.setEffectiveTimeScale(1.0);
+        this.currentAction.action.setEffectiveWeight(1.0);
+
+        this.currentAction.action.crossFadeFrom(
+          this.prevAction.action as AnimationAction,
+          0.3,
           true
         );
         this.currentAction?.action?.play();
