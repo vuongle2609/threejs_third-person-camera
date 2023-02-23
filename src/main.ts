@@ -11,8 +11,9 @@ import Light from "./light";
 import BasicCharacterControllerInput from "./input";
 import Character_animation from "./animation";
 import { GUI } from "dat.gui";
+import { Vector2 } from "three";
+import MouseControl from "./mouse";
 class Game {
-  paused = true;
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -27,33 +28,10 @@ class Game {
   wallsBB: THREE.Box3[] = [];
   characterMixer: THREE.AnimationMixer;
   character_animation: Character_animation;
+  mouse_control: MouseControl;
 
   constructor() {
     this.initialize();
-  }
-
-  initialControl() {
-    const modal_start = document.querySelector(".modal_start");
-    const buttonStart = document.querySelector(".modal_start button");
-
-    buttonStart?.addEventListener("click", () => {
-      this.paused = false;
-
-      if (modal_start) {
-        //@ts-ignore
-        modal_start.style.display = "none";
-      }
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.code == "Escape") {
-        this.paused = true;
-        if (modal_start) {
-          //@ts-ignore
-          modal_start.style.display = "flex";
-        }
-      }
-    });
   }
 
   initialize() {
@@ -79,17 +57,45 @@ class Game {
     this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
 
     this.control = new OrbitControls(this.camera, this.renderer.domElement);
-    
+
     this.control.dispose();
 
     new Light(this.scene);
 
+    const groundTexure = new THREE.TextureLoader().load(
+      "/assets/ground/pavement_03_diff_1k.jpg"
+    );
+    groundTexure.repeat.set(10, 10);
+    groundTexure.wrapS = THREE.RepeatWrapping;
+    groundTexure.wrapT = THREE.RepeatWrapping;
+
+    const groundTexureNor = new THREE.TextureLoader().load(
+      "/assets/ground/pavement_03_nor_gl_1k.jpg"
+    );
+    groundTexureNor.repeat.set(10, 10);
+    groundTexureNor.wrapS = THREE.RepeatWrapping;
+    groundTexureNor.wrapT = THREE.RepeatWrapping;
+
+    const groundTexureARM = new THREE.TextureLoader().load(
+      "/assets/ground/pavement_03_arm_1k.jpg"
+    );
+    groundTexureARM.repeat.set(10, 10);
+    groundTexureARM.wrapS = THREE.RepeatWrapping;
+    groundTexureARM.wrapT = THREE.RepeatWrapping;
+
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(120, 120),
-      new THREE.MeshPhongMaterial({ color: 0xffe9b1 })
+      new THREE.MeshStandardMaterial({
+        map: groundTexure,
+        normalMap: groundTexureNor,
+        aoMap: groundTexureARM,
+        roughnessMap: groundTexureARM,
+        metalnessMap: groundTexureARM,
+        normalScale: new Vector2(50, 50),
+      })
     );
     plane.rotation.set(-Math.PI / 2, 0, 0);
-    plane.position.set(0, -2, 0);
+    plane.position.set(0, 0, 0);
     plane.receiveShadow = true;
     this.scene.add(plane);
 
@@ -129,7 +135,9 @@ class Game {
     wallsArray.forEach(({ position, size, rotation }) => {
       const wall = new THREE.Mesh(
         new THREE.BoxGeometry(size[0], size[1], size[2]),
-        new THREE.MeshPhongMaterial({ color: 0xfffbc1 })
+        new THREE.MeshStandardMaterial({
+          color: 0xfffbc1,
+        })
       );
 
       wall.castShadow = true;
@@ -146,7 +154,7 @@ class Game {
       this.wallsBB.push(wallBB);
     });
 
-    this.initialControl();
+    this.mouse_control = new MouseControl();
 
     this.stats = Stats();
     // fps show
@@ -246,7 +254,11 @@ class Game {
 
     const input = new BasicCharacterControllerInput();
 
-    this.camera_movement = new Camera_movement(this.character, this.camera);
+    this.camera_movement = new Camera_movement({
+      character: this.character,
+      camera: this.camera,
+      mouse: this.mouse_control,
+    });
 
     this.character_control = new Character_control({
       character: this.character,
@@ -254,6 +266,7 @@ class Game {
       camera: this.camera,
       scene: this.scene,
       input,
+      mouse: this.mouse_control,
     });
 
     this.character_animation = new Character_animation({
@@ -275,14 +288,14 @@ class Game {
 
     const deltaT = this.clock.getDelta();
 
-    if (!this.paused) {
+    if (!this.mouse_control.paused) {
       this.character_control?.update(deltaT);
+      this.character_animation?.update(deltaT);
     }
 
     this.characterMixer?.update(deltaT);
     this.renderer.render(this.scene, this.camera);
 
-    this.character_animation?.update(deltaT);
     this.stats.update();
     this.camera_movement?.update(deltaT);
   }

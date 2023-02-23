@@ -3,6 +3,7 @@ import { Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GRAVITY, JUMP_FORCE, SPEED } from "./configs/constants";
 import BasicCharacterControllerInput from "./input";
+import MouseControl from "./mouse";
 
 interface PropsType {
   character: THREE.Object3D;
@@ -10,6 +11,7 @@ interface PropsType {
   camera: THREE.PerspectiveCamera;
   scene: THREE.Scene;
   input: BasicCharacterControllerInput;
+  mouse: MouseControl;
 }
 
 export default class Character_control {
@@ -22,28 +24,25 @@ export default class Character_control {
   velocityY: number = 0;
   airDirection: Vector3 | null;
   scene: THREE.Scene;
-  mousePercentScreen = 0;
+  mouse_control: MouseControl;
 
-  constructor({ character, control, camera, scene, input }: PropsType) {
+  constructor({ character, control, camera, scene, input, mouse }: PropsType) {
     this.scene = scene;
     this.camera = camera;
     this.input = input;
     this.control = control;
     this.character = character;
+    this.mouse_control = mouse;
 
     this.currentPosition = new Vector3();
-
-    document.addEventListener("mousemove", (e) => {
-      this.mousePercentScreen = e.clientX / window.screenX;
-    });
-
-    // document.addEventListener("click", (e) => {
-    //   this.character.rotation.set(0, 6.2832, 0);
-    // });
   }
 
   updateNewPosition(deltaT: number) {
-    this.character.rotation.set(0, 6.2832 * -this.mousePercentScreen, 0);
+    this.character.rotation.set(
+      0,
+      6.2832 * -this.mouse_control.mousePercentScreenX,
+      0
+    );
 
     // vector chi huong di chuyen
     const direction = new Vector3().copy(this.currentPosition);
