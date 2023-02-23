@@ -22,6 +22,7 @@ export default class Character_control {
   velocityY: number = 0;
   airDirection: Vector3 | null;
   scene: THREE.Scene;
+  mousePercentScreen = 0;
 
   constructor({ character, control, camera, scene, input }: PropsType) {
     this.scene = scene;
@@ -33,9 +34,7 @@ export default class Character_control {
     this.currentPosition = new Vector3();
 
     document.addEventListener("mousemove", (e) => {
-      const rotatePercent = e.clientX / window.screenX;
-      console.log(rotatePercent * 100);
-      this.character.rotation.set(0, 6.2832 * -rotatePercent, 0);
+      this.mousePercentScreen = e.clientX / window.screenX;
     });
 
     // document.addEventListener("click", (e) => {
@@ -44,6 +43,8 @@ export default class Character_control {
   }
 
   updateNewPosition(deltaT: number) {
+    this.character.rotation.set(0, 6.2832 * -this.mousePercentScreen, 0);
+
     // vector chi huong di chuyen
     const direction = new Vector3().copy(this.currentPosition);
 
@@ -54,7 +55,7 @@ export default class Character_control {
     );
 
     const sideVector = new Vector3(
-      (this.input.keys.right ? 1 : 0) - (this.input.keys.left ? 1 : 0),
+      (this.input.keys.left ? 1 : 0) - (this.input.keys.right ? 1 : 0),
       0,
       0
     );
@@ -66,6 +67,21 @@ export default class Character_control {
     let gravityVector = new Vector3(0, 0, 0);
 
     let moveVector = new Vector3(direction.x, 0, direction.z);
+
+    const forwardVector = new Vector3();
+    this.character.getWorldDirection(forwardVector);
+
+    forwardVector.y = 0;
+    forwardVector.normalize();
+
+    const vectorUp = new Vector3(0, 1, 0);
+
+    const vectorRight = vectorUp.crossVectors(vectorUp, forwardVector);
+
+    const moveVector2 = new Vector3().addVectors(
+      forwardVector.multiplyScalar(frontVector.z),
+      vectorRight.multiplyScalar(sideVector.x)
+    );
 
     // if (this.character.touching && this.character.direction) {
     //   const wallVector = this.character.direction.normalize();
@@ -104,7 +120,7 @@ export default class Character_control {
     //   }
     // }
 
-    moveVector.normalize().multiplyScalar(SPEED);
+    moveVector2.normalize().multiplyScalar(SPEED);
 
     // if (this.isJump) {
     //   this.velocityY -= GRAVITY * deltaT;
@@ -150,7 +166,7 @@ export default class Character_control {
     }
 
     this.character.position
-      .add(new Vector3(moveVector.x, 0, moveVector.z))
+      .add(new Vector3(moveVector2.x, 0, moveVector2.z))
       .add(gravityVector);
   }
 

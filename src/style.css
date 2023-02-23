@@ -17,3 +17,22 @@ body {
 /* * {
   cursor: none;
 } */
+
+.modal_start {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal_start button {
+  width: 200px;
+  height: 100px;
+  border: none;
+  outline: none;
+}

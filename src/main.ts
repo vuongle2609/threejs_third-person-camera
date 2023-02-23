@@ -12,6 +12,7 @@ import BasicCharacterControllerInput from "./input";
 import Character_animation from "./animation";
 import { GUI } from "dat.gui";
 class Game {
+  paused = true;
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -25,11 +26,34 @@ class Game {
   characterBB: THREE.Box3;
   wallsBB: THREE.Box3[] = [];
   characterMixer: THREE.AnimationMixer;
-
   character_animation: Character_animation;
 
   constructor() {
     this.initialize();
+  }
+
+  initialControl() {
+    const modal_start = document.querySelector(".modal_start");
+    const buttonStart = document.querySelector(".modal_start button");
+
+    buttonStart?.addEventListener("click", () => {
+      this.paused = false;
+
+      if (modal_start) {
+        //@ts-ignore
+        modal_start.style.display = "none";
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code == "Escape") {
+        this.paused = true;
+        if (modal_start) {
+          //@ts-ignore
+          modal_start.style.display = "flex";
+        }
+      }
+    });
   }
 
   initialize() {
@@ -55,6 +79,7 @@ class Game {
     this.camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
 
     this.control = new OrbitControls(this.camera, this.renderer.domElement);
+    
     this.control.dispose();
 
     new Light(this.scene);
@@ -120,6 +145,8 @@ class Game {
 
       this.wallsBB.push(wallBB);
     });
+
+    this.initialControl();
 
     this.stats = Stats();
     // fps show
@@ -248,9 +275,13 @@ class Game {
 
     const deltaT = this.clock.getDelta();
 
+    if (!this.paused) {
+      this.character_control?.update(deltaT);
+    }
+
     this.characterMixer?.update(deltaT);
     this.renderer.render(this.scene, this.camera);
-    this.character_control?.update(deltaT);
+
     this.character_animation?.update(deltaT);
     this.stats.update();
     this.camera_movement?.update(deltaT);
