@@ -44,7 +44,6 @@ export default class Character_control {
       0
     );
 
-    // vector chi huong di chuyen
     const direction = new Vector3().copy(this.currentPosition);
 
     const frontVector = new Vector3(
@@ -82,66 +81,7 @@ export default class Character_control {
       vectorRight.multiplyScalar(sideVector.x)
     );
 
-    // if (this.character.touching && this.character.direction) {
-    //   const wallVector = this.character.direction.normalize();
-
-    //   const moveVectorCopy = new Vector3()
-    //     .copy(
-    //       new Vector3(
-    //         this.airDirection?.x && !moveVector.x
-    //           ? this.airDirection.x
-    //           : moveVector.x,
-    //         0,
-    //         this.airDirection?.z && !moveVector.z
-    //           ? this.airDirection.z
-    //           : moveVector.z
-    //       )
-    //     )
-    //     .normalize();
-
-    //   if (wallVector.angleTo(moveVectorCopy) > 1) {
-    //     const dotWallPlayer = new Vector3()
-    //       .copy(moveVectorCopy)
-    //       .dot(wallVector);
-
-    //     const wallVectorScalar = new Vector3(
-    //       wallVector.x * dotWallPlayer,
-    //       wallVector.y * dotWallPlayer,
-    //       wallVector.z * dotWallPlayer
-    //     );
-
-    //     const newMoveVector = new Vector3().subVectors(
-    //       moveVectorCopy,
-    //       wallVectorScalar
-    //     );
-
-    //     moveVector = new Vector3(newMoveVector.x, 0, newMoveVector.z);
-    //   }
-    // }
-
     moveVector2.normalize().multiplyScalar(SPEED);
-
-    // if (this.isJump) {
-    //   this.velocityY -= GRAVITY * deltaT;
-
-    //   if (
-    //     !this.airDirection ||
-    //     // this.character.touching ||
-    //     this.input.keys.backward ||
-    //     this.input.keys.forward ||
-    //     this.input.keys.left ||
-    //     this.input.keys.right
-    //   ) {
-    //     this.airDirection = moveVector;
-    //   }
-
-    //   if (this.character.position.y <= 0) {
-    //     this.airDirection = null;
-    //     this.velocityY = 0;
-    //     gravityVector.y = 0;
-    //     this.isJump = false;
-    //   }
-    // }
 
     if (this.input.keys.space && !this.isJump) {
       this.velocityY = JUMP_FORCE;

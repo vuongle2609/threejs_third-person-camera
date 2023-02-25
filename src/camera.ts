@@ -58,8 +58,6 @@ export default class Camera_movement {
     const idealOffset = this.calculateIdealOffset();
     const idealLookat = this.calculateIdealLookat();
 
-    // const t = 0.05;
-    // const t = 4.0 * deltaT;
     const t = 1.1 - Math.pow(0.001, deltaT);
 
     const t1 = 1;
@@ -69,19 +67,6 @@ export default class Camera_movement {
 
     this.camera.position.copy(this.currentPosition);
     this.camera.lookAt(this.currentLookat);
-
-    // const { x, y, z } = this.character.position;
-
-    // this.camera.lookAt(new Vector3(x, y, z + CAMERA_ROTATION_OFFSET_CHARACTER));
-
-    // this.camera.position.lerp(
-    //   new Vector3(
-    //     x || 0,
-    //     (y || 0) + CAMERA_HEIGHT_FROM_CHARACTER,
-    //     (z || 0) - CAMERA_FAR_FROM_CHARACTER
-    //   ),
-    //   CAMERA_LERP_ALPHA
-    // );
   }
 
   update(deltaT: number) {

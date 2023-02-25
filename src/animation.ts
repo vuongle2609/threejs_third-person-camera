@@ -25,8 +25,7 @@ export default class Character_animation {
 
   handleAnimation() {
     const { keys } = this.input;
-    const { running, runningBack, jump, leftRun, rightRun, idle } =
-      this.animations;
+    const { running, runningBack, leftRun, rightRun, idle } = this.animations;
 
     if (keys.left) {
       this.currentAction = {
@@ -48,14 +47,7 @@ export default class Character_animation {
         name: "runningBack",
         action: runningBack,
       };
-    }
-    // else if (keys.space) {
-    //   this.currentAction = {
-    //     name: "jump",
-    //     action: jump,
-    //   };
-    // }
-    else {
+    } else {
       this.currentAction = {
         name: "idle",
         action: idle,
